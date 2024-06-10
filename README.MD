@@ -1,6 +1,6 @@
 # Machine learning stock predictor
 
-##https://mlstocks.streamlit.app/
+## https://mlstocks.streamlit.app/
 
 * Python, streamlit, Prophet
 
