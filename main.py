@@ -23,5 +23,6 @@ def get_data(ticker):
     data.reset_index(inplace=True)
     return data
 
-data_state = st.text("Loading data...")
+data_state = sl.text("Loading data...")
 data = get_data(selected_stock)
+data_state.text("Loaded data!")
