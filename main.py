@@ -42,7 +42,7 @@ sl.write(data.tail())
 plot_data(data)
 
 # prediction using prophet
-df_train = data['Date', 'Close']
+df_train = data[['Date', 'Close']]
 
 # how prophet takes the data, look at documentation
 df_train = df_train.rename(columns={"Date": "ds", "Close": "y"})
@@ -52,3 +52,15 @@ model = Prophet()
 model.fit(df_train)
 future = model.make_future_dataframe(periods=period)
 prediction = model.predict(future)
+
+sl.subheader("Prediction data")
+sl.write(prediction.tail())
+
+sl.write('Prediction data')
+fig1 = plot_plotly(model, prediction)
+sl.plotly_chart(fig1)
+
+sl.write('Prediction components')
+fig2 = model.plot_components(prediction)
+# not a plot so dont need to plotly plot
+sl.write(fig2)
