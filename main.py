@@ -10,8 +10,8 @@ TODAY = date.today().strftime("%Y-%m-%d")
 
 sl.title("Stock Prediction Site")
 
-stocks = ("GOOG", "MSFT", "TSLA", "AAPL", "GME", "AMC")
-selected_stock = sl.selectbox("Select the stock you want for prediciton", stocks)
+# Use a text input instead of a selectbox for ticker symbols
+selected_stock = sl.text_input("Enter the stock ticker for prediction (e.g., AAPL for Apple Inc.)", "AAPL")
 
 num_years = sl.slider("Years of prediction", 1, 10)
 period = num_years * 365
@@ -32,35 +32,42 @@ def plot_data(data):
     fig.layout.update(title_text="Time Series Data", xaxis_rangeslider_visible=True)
     sl.plotly_chart(fig)
 
-data_state = sl.text("Loading data...")
-data = get_data(selected_stock)
-data_state.text("Loaded data!")
+# Ensure a ticker is entered before fetching data
+if selected_stock:
+    data_state = sl.text("Loading data...")
+    try:
+        data = get_data(selected_stock)
+        data_state.text("Loaded data!")
 
-sl.subheader("Raw stock data")
-sl.write(data.tail())
+        sl.subheader("Raw stock data")
+        sl.write(data.tail())
 
-plot_data(data)
+        plot_data(data)
 
-# prediction using prophet
-df_train = data[['Date', 'Close']]
+        # prediction using prophet
+        df_train = data[['Date', 'Close']]
 
-# how prophet takes the data, look at documentation
-df_train = df_train.rename(columns={"Date": "ds", "Close": "y"})
+        # how prophet takes the data, look at documentation
+        df_train = df_train.rename(columns={"Date": "ds", "Close": "y"})
 
-# init prophet model and start training
-model = Prophet()
-model.fit(df_train)
-future = model.make_future_dataframe(periods=period)
-prediction = model.predict(future)
+        # init prophet model and start training
+        model = Prophet()
+        model.fit(df_train)
+        future = model.make_future_dataframe(periods=period)
+        prediction = model.predict(future)
 
-sl.subheader("Prediction data")
-sl.write(prediction.tail())
+        sl.subheader("Prediction data")
+        sl.write(prediction.tail())
 
-sl.write('Prediction data')
-fig1 = plot_plotly(model, prediction)
-sl.plotly_chart(fig1)
+        sl.write('Prediction data')
+        fig1 = plot_plotly(model, prediction)
+        sl.plotly_chart(fig1)
 
-sl.write('Prediction components')
-fig2 = model.plot_components(prediction)
-# not a plot so dont need to plotly plot
-sl.write(fig2)
+        sl.write('Prediction components')
+        fig2 = model.plot_components(prediction)
+        # not a plot so dont need to plotly plot
+        sl.write(fig2)
+    except Exception as e:
+        data_state.text(f"Error loading data for {selected_stock}: {str(e)}")
+else:
+    sl.text("Please enter a stock ticker to get started.")
