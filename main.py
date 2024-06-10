@@ -25,9 +25,12 @@ def get_data(ticker):
     data.reset_index(inplace=True)
     return data
 
-def plot_data():
+def plot_data(data):
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=data['Date'], y=data['Open']))
+    fig.add_trace(go.Scatter(x=data['Date'], y=data['Open'], name='stock_open'))
+    fig.add_trace(go.Scatter(x=data['Date'], y=data['Close'], name='stock_close'))
+    fig.layout.update(title_text="Time Series Data", xaxis_rangeslider_visible=True)
+    sl.plotly_chart(fig)
 
 data_state = sl.text("Loading data...")
 data = get_data(selected_stock)
@@ -35,3 +38,17 @@ data_state.text("Loaded data!")
 
 sl.subheader("Raw stock data")
 sl.write(data.tail())
+
+plot_data(data)
+
+# prediction using prophet
+df_train = data['Date', 'Close']
+
+# how prophet takes the data, look at documentation
+df_train = df_train.rename(columns={"Date": "ds", "Close": "y"})
+
+# init prophet model and start training
+model = Prophet()
+model.fit(df_train)
+future = model.make_future_dataframe(periods=period)
+prediction = model.predict(future)
